@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Shopping Cart</title>
+</head>
+<body>
+
+<h1>Shopping Cart</h1>
+
+<!-- Controls -->
+<button id="refreshBtn">Refresh</button>
+
+<input id="itemInput" placeholder="Item name">
+
+<button id="addBtn">Add</button>
+
+<ul id="list"></ul>
+
+<script>
+/* ---------- setup event listeners ---------- */
+
+document.getElementById("refreshBtn")
+    .addEventListener("click", loadItems);
+
+document.getElementById("addBtn")
+    .addEventListener("click", addItem);
+
+/* ---------- GET /items ---------- */
+
+async function loadItems() {
+
+    const res = await fetch("/items"); // This creates the HTTP get request
+    const items = await res.json();
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    for (const item of items) {
+
+        const li = document.createElement("li");
+
+        // item text
+        li.textContent = item + " ";
+
+        list.appendChild(li);
+
+        // Adds a delete button for each item
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+
+        delBtn.addEventListener("click", () => {
+          deleteItem(item);
+        });
+        li.appendChild(delBtn);
+    }
+}
+
+
+/* ---------- POST /items ---------- */
+async function addItem() {
+  const input = document.getElementById("itemInput");
+  const name = input.value.trim();
+  if (!name) return;
+
+  await fetch("/items", {
+    method: "POST",
+    body: name
+  });
+
+  input.value = "";
+  loadItems();
+}
+
+/* ---------- DELETE /items/{name} ---------- */
+async function deleteItem(name) {
+
+  await fetch(`/items/${name}`, {
+    method: "DELETE"
+  });
+
+  loadItems();
+}
+
+
+/* ---------- initial load ---------- */
+
+loadItems();
+
+</script>
+
+</body>
+</html>
